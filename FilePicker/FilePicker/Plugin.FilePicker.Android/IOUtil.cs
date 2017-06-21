@@ -131,7 +131,23 @@ namespace Plugin.FilePicker
 
         internal static Stream getStream(Context context, Android.Net.Uri uri)
         {
-            return context.ContentResolver.OpenInputStream(uri);
+            try
+            {
+                return context.ContentResolver.OpenInputStream(uri);
+            }
+            catch (System.Exception org)
+            {
+                // Android 7 and Astro file manager send invalid path.
+                // So, replace string "/file/file" -> "/file"
+                var strUri = uri.ToString();
+                var index = strUri.IndexOf("/file/file/");
+                if (index == -1)
+                {
+                    throw org;
+                }
+                var uri2 = Android.Net.Uri.Parse(strUri.Substring(0, index) + strUri.Substring(index + 5));
+                return context.ContentResolver.OpenInputStream(uri2);
+            }
         }
 
 

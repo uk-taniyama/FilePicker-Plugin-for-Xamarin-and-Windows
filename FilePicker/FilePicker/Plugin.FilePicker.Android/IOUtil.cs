@@ -129,6 +129,12 @@ namespace Plugin.FilePicker
             return "com.android.providers.media.documents".Equals (uri.Authority);
         }
 
+        internal static Stream getStream(Context context, Android.Net.Uri uri)
+        {
+            return context.ContentResolver.OpenInputStream(uri);
+        }
+
+
         public static Byte[] readFile(Context context, Android.Net.Uri uri)
         {
             using (var inStream = context.ContentResolver.OpenInputStream(uri))

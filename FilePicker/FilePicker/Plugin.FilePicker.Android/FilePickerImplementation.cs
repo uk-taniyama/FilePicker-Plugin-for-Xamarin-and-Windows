@@ -56,14 +56,16 @@ namespace Plugin.FilePicker
                     var tcs = Interlocked.Exchange (ref _completionSource, null);
 
                     FilePickerActivity.FilePicked -= handler;
-
-                    tcs?.SetResult (new FileData (e.FilePath, e.FileName, 
+                    var uri = Android.Net.Uri.Parse(e.FilePath);
+                    string filePath = IOUtil.getPath(_context, uri);
+                    if (filePath != null)
+                    {
+                        filePath = uri.Path;
+                    }
+                    tcs?.SetResult(new FileData(filePath, e.FileName,
                         () =>
                         {
-                            if (IOUtil.isMediaStore(e.FilePath))
-                                return new MemoryStream(e.FileByte);
-                            else
-                                return System.IO.File.OpenRead(e.FilePath);
+                            return IOUtil.getStream(_context, uri);
                         }));
                 };
 
@@ -97,7 +99,7 @@ namespace Plugin.FilePicker
         }
 
         public async Task<bool> SaveFile (FileData fileToSave)
-        {
+            {
             try {
                 var myFile = new Java.IO.File(Android.OS.Environment.ExternalStorageDirectory, fileToSave.FileName);
 

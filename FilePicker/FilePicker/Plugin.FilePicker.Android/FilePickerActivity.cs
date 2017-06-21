@@ -46,19 +46,9 @@ namespace Plugin.FilePicker
                 try {
                     var _uri = data.Data;
 
-                    var filePath = IOUtil.getPath (context, _uri);
-
-                    if (string.IsNullOrEmpty (filePath))
-                        filePath = _uri.Path;
-                    byte[] file;
-                    if (IOUtil.isMediaStore(filePath))
-                        file = IOUtil.readFile(context, _uri);
-                    else
-                        file = IOUtil.readFile (filePath);
-
                     var fileName = GetFileName (context, _uri);
 
-                    OnFilePicked (new FilePickerEventArgs (file, fileName, filePath));
+                    OnFilePicked (new FilePickerEventArgs (null, fileName, _uri.ToString()));
                 } catch (Exception readEx) {
                     // Notify user file picking failed.
                     OnFilePickCancelled ();

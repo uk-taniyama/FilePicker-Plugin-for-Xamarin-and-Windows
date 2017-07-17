@@ -95,6 +95,19 @@ namespace Plugin.FilePicker
             return media;
         }
 
+        public static string[] ALLOWED_UTIS = new string[]
+        {
+            UTType.UTF8PlainText,
+            UTType.PlainText,
+            UTType.RTF,
+            UTType.PNG,
+            UTType.Text,
+            UTType.PDF,
+            UTType.Image,
+            UTType.UTF16PlainText,
+            UTType.FileURL
+        };
+
         private Task<FileData> TakeMediaAsync ()
         {
             var id = GetRequestId ();
@@ -104,20 +117,8 @@ namespace Plugin.FilePicker
             if (Interlocked.CompareExchange (ref _completionSource, ntcs, null) != null)
                 throw new InvalidOperationException ("Only one operation can be active at a time");
 
-            var allowedUtis = new string [] {
-                UTType.UTF8PlainText,
-                UTType.PlainText,
-                UTType.RTF,
-                UTType.PNG,
-                UTType.Text,
-                UTType.PDF,
-                UTType.Image,
-                UTType.UTF16PlainText,
-                UTType.FileURL
-            };
-
             var importMenu =
-                new UIDocumentMenuViewController (allowedUtis, UIDocumentPickerMode.Import) {
+                new UIDocumentMenuViewController (ALLOWED_UTIS, UIDocumentPickerMode.Import) {
                     Delegate = this,
                     ModalPresentationStyle = UIModalPresentationStyle.Popover
                 };
@@ -136,7 +137,7 @@ namespace Plugin.FilePicker
             Handler = (s, e) => {
                 var tcs = Interlocked.Exchange (ref _completionSource, null);
 
-                tcs?.SetResult (new FileData (e.FilePath, e.FileName, () => File.OpenRead (e.FilePath)));
+                tcs?.SetResult (new FileData (e.FilePath, e.FileName, () => new MemoryStream (e.FileByte)));
             };
 
             return _completionSource.Task;
